@@ -83,9 +83,9 @@
                 
                 rallyQuery.getAll(gotPreferencesResponse);          
                 
-              });
+            });
                 
-              gotPreferencesResponse = function() {
+            gotPreferencesResponse = function() {
                 var valueString = this.allResults[0].Value;
                 while (valueString.indexOf('Infinity') >= 0) {
                   valueString = valueString.replace('Infinity', -1);
@@ -102,10 +102,10 @@
                 }                
             
                 runAnalyticsQuery();
-              }
+            };
               
               
-              runAnalyticsQuery = function() {
+            runAnalyticsQuery = function() {
                 var config = {
                   'X-RallyIntegrationName': 'CFD Prototype',
                   'X-RallyIntegrationVendor': 'Rally The A-Team',
@@ -150,7 +150,7 @@
                 var config = {
                   groupByField: "KanbanState",
                   groupByFieldValues: kanbanStateValues,
-                  useAllGroupByFieldValues: true,  // Extras are added to end. Setting to 'false' will just use the ones in groupByFieldValues. 
+                  useAllGroupByFieldValues: false,  // Extras are added to end. Setting to 'false' will just use the ones in groupByFieldValues. 
                   startTrackingGroupByFieldValue: results[results.length - 1]["KanbanState"],
                   // aggregationField: "PlanEstimate",
                   // aggregationFunction: "$sum",
@@ -158,7 +158,7 @@
                   aggregationField: "ObjectID",
                   aggregationFunction: "$count",
                   aggregationLabel: 'Count of Stories',                  
-                  workDays: 'Monday, Tuesday, Wednesday, Thursday, Friday', // They work on Sundays
+                  workDays: 'Monday, Tuesday, Wednesday, Thursday, Friday',
                   timezone: 'America/New_York',
                   holidays: [
                     {month: 12, day: 25},

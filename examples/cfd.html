@@ -141,7 +141,7 @@
                 var config = {
                   groupByField: "KanbanState",
                   groupByFieldValues: kanbanStateValues,
-                  useAllGroupByFieldValues: true,  // Extras are added to end. Setting to 'false' will just use the ones in groupByFieldValues. 
+                  useAllGroupByFieldValues: false,  // Extras are added to end. Setting to 'false' will just use the ones in groupByFieldValues. 
                   startTrackingGroupByFieldValue: results[results.length - 1]["KanbanState"],
                   // aggregationField: "PlanEstimate",
                   // aggregationFunction: "$sum",

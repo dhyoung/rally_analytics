@@ -964,51 +964,7 @@
                 timeInState = isc1.timeInState(snapshots, '_ValidFrom', '_ValidTo', uniqueIDField);
                 var row;
                 
-                // ---
-                // Replace with call to ChartTimeInState above
-/*
-                var timeInState = [];
-                var hourCT;
-                
-                baseChance = Math.random() * 0.5
-                while (i1.hasNext()) {
-                  hourCT = i1.next();
-                  if (Math.random() < baseChance) {
-                    row = {
-                      ObjectID: i1.count,
-                      ticks: Math.pow(4, (Math.random() + 0.7) * 2.6) + 4 * 8,
-                      finalEventAt: hourCT.getJSDate(workspaceConfiguration.TimeZone)
-                    };
-                    timeInState.push(row);
-                    if (Math.random() < baseChance) {  // different value but same hourCT
-                      row = {
-                        ObjectID: i1.count,
-                        ticks: Math.pow(4, (Math.random() + 0.7) * 2.6) + 4 * 8,
-                        finalEventAt: hourCT.getJSDate(workspaceConfiguration.TimeZone)
-                      };
-                      timeInState.push(row);
-                    }                   
-                  }
-                  if (Math.random() < baseChance / 20) {
-                    row = {
-                      ObjectID: i1.count,
-                      ticks: Math.pow(4, (Math.random() + 0.9) * 2.6),
-                      finalEventAt: hourCT.getJSDate(workspaceConfiguration.TimeZone)
-                    };
-                    timeInState.push(row);
-                  }
-                  if (Math.random() < baseChance / 20) {
-                    row = {
-                      ObjectID: i1.count,
-                      ticks: Math.random() * 40,
-                      finalEventAt: hourCT.getJSDate(workspaceConfiguration.TimeZone)
-                    };
-                    timeInState.push(row);
-                  }
-                }
-*/
-                // ----
-
+                // calculating workHours from startWorkTime and pastEndWorkTime
                 var workMinutes;
                 if (r1.startWorkMinutes < r1.pastEndWorkMinutes) {
                   workMinutes = r1.pastEndWorkMinutes - r1.startWorkMinutes;
@@ -1018,6 +974,7 @@
                 }
                 var workHours = workMinutes / 60;
                             
+                // converting ticks (hours) into days
                 var _i, _len;
                 var data = [];
                 for (_i = 0, _len = timeInState.length; _i < _len; _i++) {
@@ -1025,8 +982,8 @@
                   row.days = row.ticks / workHours;
                 }
                 
+                // calling lumenize.histogram
                 var histogramField = 'days';
-              
                 var histogramResults = histogram(timeInState, histogramField);
                 if (! histogramResults) {
                   return;
@@ -1036,6 +993,8 @@
                 var valueMax = histogramResults.valueMax;
                 var bucketSize = histogramResults.bucketSize;
                 var clipped = histogramResults.clipped;
+                
+                // creating data and tooltipLookup for HighCharts
                 var data = [];
                 var tooltipLookup = {};
                 for (_i = 0, _len = timeInState.length; _i < _len; _i++) {
@@ -1047,7 +1006,8 @@
                   data.push([milliseconds, row.clippedChartValue]);
                   tooltipLookup[milliseconds] = row;
                 }
-              
+                
+                // formatting for HighCharts             
                 var histogramCategories = [];
                 var histogramData = [];
                 var b, idx, _len2;
