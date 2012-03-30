@@ -74,9 +74,9 @@
                 
                 rallyQuery.getAll(gotPreferencesResponse);          
                 
-              });
+            });
                 
-              gotPreferencesResponse = function() {
+            gotPreferencesResponse = function() {
                 var valueString = this.allResults[0].Value;
                 while (valueString.indexOf('Infinity') >= 0) {
                   valueString = valueString.replace('Infinity', -1);
@@ -93,10 +93,10 @@
                 }                
             
                 runAnalyticsQuery();
-              }
+            };
               
               
-              runAnalyticsQuery = function() {
+            runAnalyticsQuery = function() {
                 var config = {
                   'X-RallyIntegrationName': 'CFD Prototype',
                   'X-RallyIntegrationVendor': 'Rally The A-Team',
@@ -149,7 +149,7 @@
                   aggregationField: "ObjectID",
                   aggregationFunction: "$count",
                   aggregationLabel: 'Count of Stories',                  
-                  workDays: 'Monday, Tuesday, Wednesday, Thursday, Friday', // They work on Sundays
+                  workDays: 'Monday, Tuesday, Wednesday, Thursday, Friday',
                   timezone: 'America/New_York',
                   holidays: [
                     {month: 12, day: 25},
