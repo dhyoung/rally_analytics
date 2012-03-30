@@ -67,7 +67,7 @@ rally_analytics = require('../')
   'X-RallyIntegrationVendor': 'My Company'
   'X-RallyIntegrationVersion': '0.1.0'
   username: null  # if running in browser, will prompt
-  password: null  # if running in Node.js will look for RALLY_USERNAME/RALLY_PASSWORD environment variables
+  password: null  # if running in Node.js will look for RALLY_USER/RALLY_PASSWORD environment variables
   workspaceOID: 12345
   additionalHeaders: [ 
     someHeader: 'Some Value'
@@ -106,7 +106,6 @@ rally_analytics = require('../')
 <li><strong>service</strong> default "analytics"</li>
 <li><strong>version</strong> defaults to latest current version</li>
 <li><strong>endpoint</strong> defaults to "artifact/snapshot/query.js"</li>
-<li><strong>debug</strong> defaults to false</li>
 </ul>
 
 <h2>Properties you should only inspect</h2>
@@ -177,6 +176,11 @@ so you can inspect these properties by simply prepending them with <code>this.</
                 
                 <div class="method">
                   <h4>auth(@username, @password)</h4>
+                  
+                </div>
+                
+                <div class="method">
+                  <h4>debug()</h4>
                   
                 </div>
                 

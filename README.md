@@ -110,8 +110,8 @@ Then, you need to set the config Object.
       'X-RallyIntegrationVendor': 'My Company'
       'X-RallyIntegrationVersion': '0.1.0'
       username: null  # if running in browser, will prompt
-      password: null  # if running in Node.js will look for RALLY_USERNAME/RALLY_PASSWORD environment variables
-      workspaceOID: 12345
+      password: null  # if running in Node.js will look for RALLY_USER/RALLY_PASSWORD environment variables
+      workspaceOID: 12345  # if running in Node.js will look for RALLY_WORKSPACE
       additionalHeaders: [ 
         someHeader: 'Some Value'
       ]

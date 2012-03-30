@@ -61,7 +61,7 @@
             'X-RallyIntegrationVendor': 'My Company'
             'X-RallyIntegrationVersion': '0.1.0'
             username: null  # if running in browser, will prompt
-            password: null  # if running in Node.js will look for RALLY_USERNAME/RALLY_PASSWORD environment variables
+            password: null  # if running in Node.js will look for RALLY_USER/RALLY_PASSWORD environment variables
             workspaceOID: 12345
             additionalHeaders: [ 
               someHeader: 'Some Value'
@@ -93,7 +93,6 @@
       * **service** default "analytics"
       * **version** defaults to latest current version
       * **endpoint** defaults to "artifact/snapshot/query.js"
-      * **debug** defaults to false
       
       ## Properties you should only inspect ##
       
@@ -111,10 +110,10 @@
     */
 
     function AnalyticsQuery(config, _XHRClass) {
-      var addRequiredHeader, key, os, platform, userAgent, value, _ref;
+      var addRequiredHeader, key, os, platform, userAgent, value, _ref, _ref2, _ref3, _ref4;
       this._XHRClass = _XHRClass;
       this._gotResponse = __bind(this._gotResponse, this);
-      this.debug = false;
+      this._debug = false;
       if (this._XHRClass == null) {
         throw new Error('Must provide an XHRClass as the second parameter for this AnalyticsQuery constructor.');
       }
@@ -157,11 +156,25 @@
       addRequiredHeader(this.headers, 'X-RallyIntegrationVersion');
       if (config.workspaceOID != null) {
         this.workspaceOID = config.workspaceOID;
+      } else if (typeof process !== "undefined" && process !== null ? (_ref2 = process.env) != null ? _ref2.RALLY_WORKSPACE : void 0 : void 0) {
+        this.workspaceOID = process.env.RALLY_WORKSPACE;
       } else {
-        throw new Error('Must provide a config.workspaceOID');
+        throw new Error('Must provide a config.workspaceOID or set environment variable RALLY_WORKSPACE');
       }
-      this.username = config.username;
-      this.password = config.password;
+      if (config.username != null) {
+        this.username = config.username;
+      } else if (typeof process !== "undefined" && process !== null ? (_ref3 = process.env) != null ? _ref3.RALLY_USER : void 0 : void 0) {
+        this.username = process.env.RALLY_USER;
+      } else {
+        this.username = void 0;
+      }
+      if (config.password != null) {
+        this.password = config.password;
+      } else if (typeof process !== "undefined" && process !== null ? (_ref4 = process.env) != null ? _ref4.RALLY_PASSWORD : void 0 : void 0) {
+        this.password = process.env.RALLY_PASSWORD;
+      } else {
+        this.password = void 0;
+      }
       this.protocol = "https";
       this.server = "rally1.rallydev.com";
       this.service = "analytics";
@@ -221,6 +234,10 @@
       return this;
     };
 
+    AnalyticsQuery.prototype.debug = function() {
+      return this._debug = true;
+    };
+
     AnalyticsQuery.prototype.getBaseURL = function() {
       return this.protocol + '://' + [this.server, this.service, this.version, this.workspaceOID, this.endpoint].join('/');
     };
@@ -246,7 +263,13 @@
     };
 
     AnalyticsQuery.prototype.getURL = function() {
-      return this.getBaseURL() + '?' + this.getQueryString();
+      var url;
+      url = this.getBaseURL() + '?' + this.getQueryString();
+      if (this._debug) {
+        console.log('\nfind: ', this._find);
+        console.log('\nurl: ', url);
+      }
+      return encodeURI(url);
     };
 
     AnalyticsQuery.prototype.getAll = function(_callback) {
@@ -270,6 +293,7 @@
     AnalyticsQuery.prototype._gotResponse = function() {
       var key, newFind, o, value, _i, _len, _ref, _ref2, _ref3, _return;
       var _this = this;
+      if (this._debug) console.log('readyState: ', this._xhr.readyState);
       if (this._xhr.readyState === 4) {
         _return = function() {
           _this._firstPage = true;
@@ -277,9 +301,10 @@
           return _this._callback.call(_this);
         };
         this.lastResponseText = this._xhr.responseText;
-        if (this.debug) console.log('\nlastResponse\n' + this.lastResponseText);
+        if (this._debug) console.log('\nlastResponse\n' + this.lastResponseText);
         this.lastResponse = JSON.parse(this.lastResponseText);
-        if (false) {
+        if (this.lastResponse.Errors.length > 0) {
+          console.log('Errors\n' + JSON.stringify(this.lastResponse.Errors));
           return _return();
         } else {
           if (this._firstPage) {

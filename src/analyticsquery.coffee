@@ -42,7 +42,7 @@ class AnalyticsQuery
         'X-RallyIntegrationVendor': 'My Company'
         'X-RallyIntegrationVersion': '0.1.0'
         username: null  # if running in browser, will prompt
-        password: null  # if running in Node.js will look for RALLY_USERNAME/RALLY_PASSWORD environment variables
+        password: null  # if running in Node.js will look for RALLY_USER/RALLY_PASSWORD environment variables
         workspaceOID: 12345
         additionalHeaders: [ 
           someHeader: 'Some Value'
@@ -74,7 +74,6 @@ class AnalyticsQuery
   * **service** default "analytics"
   * **version** defaults to latest current version
   * **endpoint** defaults to "artifact/snapshot/query.js"
-  * **debug** defaults to false
   
   ## Properties you should only inspect ##
   
@@ -92,7 +91,7 @@ class AnalyticsQuery
     
   ###
   constructor: (config, @_XHRClass) ->
-    @debug = false
+    @_debug = false
     
     unless @_XHRClass?
       throw new Error('Must provide an XHRClass as the second parameter for this AnalyticsQuery constructor.')
@@ -128,14 +127,28 @@ class AnalyticsQuery
     addRequiredHeader(@headers, 'X-RallyIntegrationName')
     addRequiredHeader(@headers, 'X-RallyIntegrationVendor')
     addRequiredHeader(@headers, 'X-RallyIntegrationVersion')
-    
+ 
+      
     if config.workspaceOID?
       @workspaceOID = config.workspaceOID
+    else if process?.env?.RALLY_WORKSPACE
+      @workspaceOID = process.env.RALLY_WORKSPACE
     else
-      throw new Error('Must provide a config.workspaceOID')
-      
-    @username = config.username  # !TODO: Before creating this AnalyticsQuery object, we need to follow pattern of RallySettings in pyral: https://github.com/Rallydev/pyral/blob/master/pyral/config.py
-    @password = config.password
+      throw new Error('Must provide a config.workspaceOID or set environment variable RALLY_WORKSPACE')
+    
+    if config.username?
+      @username = config.username  # !TODO: Before creating this AnalyticsQuery object, we need to follow pattern of RallySettings in pyral: https://github.com/Rallydev/pyral/blob/master/pyral/config.py
+    else if process?.env?.RALLY_USER
+      @username = process.env.RALLY_USER
+    else
+      @username = undefined
+    
+    if config.password?
+      @password = config.password
+    else if process?.env?.RALLY_PASSWORD
+      @password = process.env.RALLY_PASSWORD
+    else
+      @password = undefined
     
     @protocol = "https"
     @server = "rally1.rallydev.com"
@@ -180,6 +193,9 @@ class AnalyticsQuery
     
   auth: (@username, @password) ->
     return this
+    
+  debug: () ->
+    @_debug = true
 
   getBaseURL: () ->
     return @protocol + '://' + [
@@ -206,7 +222,11 @@ class AnalyticsQuery
       throw new Error('find clause not set')
     
   getURL: () ->
-    return @getBaseURL() + '?' + @getQueryString()
+    url = @getBaseURL() + '?' + @getQueryString()
+    if @_debug
+      console.log('\nfind: ', @_find)
+      console.log('\nurl: ', url)
+    return encodeURI(url)  # !TODO: May need to look into altnerative (maybe encodeURIComponent?) because won't encode '+', '=', and '&' in values correctly
     
 #   getPage:(callback) ->
 #     callback.call(this)
@@ -225,6 +245,8 @@ class AnalyticsQuery
     
   _gotResponse: () =>
     # !TODO: Implement code to deal with errors at the XHR level as well as non-200 response codes
+    if @_debug
+      console.log('readyState: ', @_xhr.readyState)
     if @_xhr.readyState == 4
       _return = () =>
           @_firstPage = true 
@@ -232,13 +254,14 @@ class AnalyticsQuery
           @_callback.call(this)
                 
       @lastResponseText = @_xhr.responseText
-      if @debug
+      if @_debug
         console.log('\nlastResponse\n' + @lastResponseText)
       @lastResponse = JSON.parse(@lastResponseText)
       
       # if error
-      if false
+      if @lastResponse.Errors.length > 0
         # !TODO: Maybe throw away partially complete allResults?
+        console.log('Errors\n' + JSON.stringify(@lastResponse.Errors))
         _return()
       else
         if @_firstPage
